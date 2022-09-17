@@ -43,7 +43,7 @@ def main() -> None:
     t.speed(10)
     t.left(90)
 
-    s.tracer(20, 25)
+    s.tracer(20, 100)
     tree(12, 150, t)
     done()
 

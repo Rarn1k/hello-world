@@ -10,7 +10,7 @@ def main() -> None:
     tur.right(angle=90)
     tur.forward(distance=100)
 
-    # screen.tracer(n=5, delay=100)
+    screen.tracer(n=5, delay=100)
 
     screen.update()
 

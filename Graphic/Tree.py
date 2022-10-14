@@ -2,7 +2,7 @@ from random import *
 from turtle import Turtle, done, Screen
 
 
-def tree(i: int, dist, tur: Turtle) -> int:
+def tree(i: int, dist, tur: Turtle):
     angle = randint(20, 35)
     multi = 0.75
     size = int(dist / 15 + 2)

@@ -1,4 +1,4 @@
-from math import exp
+from math import exp, log, ceil
 from matplotlib import pyplot as plt
 from tabulate import tabulate
 
@@ -91,26 +91,26 @@ def newton(u_0, t, n, h, e):
 def switcher(k, u_0, t, n, h, i, e):
     if k == 1:
         print(f"Точное решение при N = {n[i]}")
-        return exact(u_0, t, n[i]), 1
+        return [exact(u_0, t, n[i]), 1]
     elif k == 2:
         print(f"Схема Эйлера при N = {n[i]}")
-        return eyler(u_0, t, n[i], h), 1
+        return [eyler(u_0, t, n[i], h), 1]
     elif k == 3:
         print(f"Схема Рунге-Кутта при N = {n[i]}")
-        return runge_kutta(u_0, t, n[i], h), 1
+        return [runge_kutta(u_0, t, n[i], h), 1]
     elif k == 4:
         print(f"Схема «предиктор-корректор» при N = {n[i]}")
-        return predictor_corr(u_0, t, n[i], h), 1
+        return [predictor_corr(u_0, t, n[i], h), 1]
     elif k == 5:
         print(f"Метод последовательных приближений при N = {n[i]}")
         y, s_max = succ_appr(u_0, t, n[i], h, e)
         print("s_max = ", s_max)
-        return y, s_max
+        return [y, s_max]
     elif k == 6:
         print(f"Метод Ньютона при N = {n[i]}")
         y, s_max = newton(u_0, t, n[i], h, e)
         print("s_max = ", s_max)
-        return y, s_max
+        return [y, s_max]
     else:
         print('Ошибка, введите одно из чисел: 1, 2, 3, 4, 5, 6')
         exit(-1)
@@ -144,11 +144,12 @@ def test(k, n, t_0, u_0, t_n, e):
     else:
         fig, axes = plt.subplots(round(len(n) / 2), 2, figsize=(14, 5))
     h_list, err_max_list, k_list = [], [], []
+    n_power = 1
     for j in range(len(n)):
         h, t = t_list(t_0, t_n, n[j])
         err = []
         err_max = 0
-        y, s_max = switcher(k, u_0, t, n, h, j, e)
+        y = switcher(k, u_0, t, n, h, j, e)[0]
         u = exact(u_0, t, n[j])
 
         for i in range(n[j] + 1):
@@ -162,8 +163,19 @@ def test(k, n, t_0, u_0, t_n, e):
         h_list.append(h)
         print('err_1_max = ', f"{err_max:.15f}")
         err_max_list.append(err_max)
-        print('K = ', f"{err_max / h:.5}", '\n')
-        k_list.append(err_max / h)
+        konst = 1  # 10 100 1000 10000 100000 1000000
+        if j < 3:
+            check = False
+            while err_max < konst * (h ** n_power):
+                n_power += 1
+                check = True
+            if check:
+                n_power -= 1
+        konst = err_max / (h ** n_power)
+        print('K = ', f"{konst:.5}", '\n')
+        k_list.append(konst)
+        print("n_power = ", n_power)
+
         if len(n) == 1:
             ax = axes
         else:
@@ -191,13 +203,13 @@ def test(k, n, t_0, u_0, t_n, e):
     else:
         n_1 = n[0]
         h, t = t_list(t_0, t_n, n_1)
-        y = switcher(k, u_0, t, n, h, 0, e)
+        y = switcher(k, u_0, t, n, h, 0, e)[0]
         if k == 2 or k == 3 or k == 4:  # Устойчивость
             delta = [-0.1, -0.05, 0, 0.05, 0.1]
             x = []
             for d in delta:
                 u_0_changed = u_0 + d
-                y_changed, s_max = switcher(k, u_0_changed, t, n, h, 0, e), 1
+                y_changed = switcher(k, u_0_changed, t, n, h, 0, e)[0]
                 x.append(abs(y_changed[n_1 - 1] - y[n_1 - 1]))
             print(tabulate({"delta": delta, "Chi": x}, headers='keys',
                            tablefmt="psql", numalign="center", ))
